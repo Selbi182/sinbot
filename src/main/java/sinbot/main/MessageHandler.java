@@ -45,6 +45,9 @@ public class MessageHandler {
 					case "new":
 						newCounter(replyEmbed, messageDigestor);
 						break;
+					case "delete":
+						deleteCounter(replyEmbed, messageDigestor);
+						break;
 					case "counters":
 						listCounters(replyEmbed);
 						break;
@@ -61,7 +64,7 @@ public class MessageHandler {
 		}
 	}
 
-	private void newCounter(EmbedBuilder replyEmbed, @NonNull Digestor digestor) {
+	private void newCounter(@NonNull EmbedBuilder replyEmbed, @NonNull Digestor digestor) {
 		String regex = "[a-zA-Z0-9_]+ .+";
 		if (digestor.peek(2).matches(regex)) {
 			String trigger = digestor.shift();
@@ -79,7 +82,31 @@ public class MessageHandler {
 		}
 	}
 
-	private void listCounters(EmbedBuilder replyEmbed) {
+	private void deleteCounter(@NonNull EmbedBuilder replyEmbed, @NonNull Digestor digestor) {
+		String regex = "[a-zA-Z0-9_]+";
+		String counterName = digestor.peek();
+		if (counterName.matches(regex)) {
+			CachedCounter counterToDelete = counters.get(counterName);
+			if (counterToDelete != null) {
+				replyEmbed.setTitle("Counter deleted:");		
+				replyEmbed.setDescription(String.format("`!%s`\n%s\n%s", counterToDelete.getTrigger(), counterToDelete.getAliasPure(), counterToDelete.getCount()));
+				replyEmbed.setColor(Color.BLACK);
+				counters.remove(counterName);
+				counterToDelete.delete();
+			} else {
+				replyEmbed.setTitle("ERROR");		
+				replyEmbed.setDescription(String.format("Counter `!%s` not found!", counterName));
+				replyEmbed.setColor(Color.RED);
+			}
+		} else {
+			replyEmbed.setTitle("ERROR");		
+			replyEmbed.setDescription("Usage:\n`!delete NAME`");
+			replyEmbed.setColor(Color.RED);
+		}
+	}
+
+
+	private void listCounters(@NonNull EmbedBuilder replyEmbed) {
 		replyEmbed.setTitle("List of all current counters:");
 		StringBuilder sb = new StringBuilder();
 		for (Map.Entry<String, CachedCounter> entry : counters.entrySet()) {
@@ -91,7 +118,7 @@ public class MessageHandler {
 		replyEmbed.setColor(Color.CYAN);
 	}
 
-	private void attemptProcessCounterIncrease(EmbedBuilder replyEmbed, @NonNull Digestor digestor, @NonNull CachedCounter cachedCounter) {
+	private void attemptProcessCounterIncrease(@NonNull EmbedBuilder replyEmbed, @NonNull Digestor digestor, @NonNull CachedCounter cachedCounter) {
 		if (digestor.isEmpty()) {
 			cachedCounter.increaseCounter();
 		} else if (digestor.peek().equals("count")) {

@@ -19,7 +19,7 @@ public class CachedCounter {
 
 	private File file;
 	private BigDecimal counter;
-	@Getter	private String trigger;
+	@Getter private String trigger;
 	@Getter	private String aliasPure;
 	@Getter	private String alias;
 
@@ -48,15 +48,18 @@ public class CachedCounter {
 	public void increaseCounter() {
 		increaseCounter(BigDecimal.ONE);
 	}
-	
+
 	public void increaseCounter(String byCount) {
 		increaseCounter(new BigDecimal(byCount));
 	}
 
-
 	public void increaseCounter(BigDecimal byCount) {
 		counter = counter.add(byCount);
 		rewriteCounterFile();
+	}
+	
+	public String getCount() {
+		return counter.stripTrailingZeros().toPlainString();
 	}
 
 	@SneakyThrows
@@ -65,9 +68,9 @@ public class CachedCounter {
 		writer.write(aliasPure);
 		writer.write('\n');
 		writer.write(counter.toString());
-}
+	}
 
-	public String getCount() {
-		return counter.stripTrailingZeros().toPlainString();
+	public void delete() {
+		file.delete();
 	}
 }
