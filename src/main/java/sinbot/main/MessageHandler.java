@@ -65,7 +65,7 @@ public class MessageHandler {
 		String regex = "[a-zA-Z0-9_]+ .+";
 		if (digestor.peek(2).matches(regex)) {
 			String trigger = digestor.shift();
-			String aliasRaw = digestor.shift();
+			String aliasRaw = digestor.peekAll();
 			String alias = aliasRaw.substring(0, 1).toUpperCase() + aliasRaw.substring(1);
 			CachedCounter newCounter = new CachedCounter(trigger, alias);
 			counters.put(trigger, newCounter);
