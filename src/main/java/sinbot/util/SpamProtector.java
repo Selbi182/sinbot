@@ -3,17 +3,21 @@ package sinbot.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.btobastian.javacord.entities.User;
-import lombok.experimental.UtilityClass;
+import org.javacord.api.entity.message.MessageAuthor;
 
-@UtilityClass
 public final class SpamProtector {
 
 	private final static Map<String, Long> cooldownPerUser = new HashMap<String, Long>();
 	private final static int COOLDOWN = 1000;
 
-	public static boolean checkAuthorOkay(User author) {
-		String id = author.getId();
+	public static boolean checkAuthorOkay(MessageAuthor messageAuthor) {
+		// Don't listen to bot-written messages
+		if (messageAuthor.isBotUser()) {
+			return false;
+		}
+		
+		// Prevent spam
+		String id = String.valueOf(messageAuthor.getId());
 		if (cooldownPerUser.containsKey(id)) {
 			if ((System.currentTimeMillis() - cooldownPerUser.get(id) - COOLDOWN) < 0) {
 				return false;

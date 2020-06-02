@@ -3,19 +3,16 @@ package sinbot.util;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import lombok.Getter;
-import lombok.ToString;
-
-@ToString
 public class Digestor {
 
-	private @Getter String trimmed;
+	private String trimmed;
+
 	private LinkedList<String> wordList;
 	private LinkedList<String> wordListOriginal;
 
 	@SuppressWarnings("unchecked")
 	public Digestor(String rawString) {
-		trimmed = rawString.trim().toLowerCase().replaceAll("[ ]+", " ");
+		trimmed = rawString.trim().replaceAll("[ ]+", " ");
 		wordList = new LinkedList<String>(Arrays.asList(trimmed.split(" ")));
 		wordListOriginal = (LinkedList<String>) wordList.clone();
 	}
@@ -46,4 +43,7 @@ public class Digestor {
 		return this;
 	}
 
+	public String getTrimmed() {
+		return trimmed;
+	}
 }

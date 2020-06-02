@@ -1,47 +1,41 @@
 package sinbot.main;
 
-import org.slf4j.LoggerFactory;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.user.UserStatus;
 
-import com.google.common.util.concurrent.FutureCallback;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.listener.message.MessageCreateListener;
-import lombok.SneakyThrows;
-import lombok.extern.java.Log;
 import sinbot.util.BotUtil;
 
-@Log
 public class SinBot {
 	public static void main(String[] args) {
-		// Reduce proprietary logger of the API to warnings only
-		((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
-
-		// Give starting message
-		log.info("Connecting SinBot...");
-		
-		// Discord API message receiver
-		DiscordAPI api = Javacord.getApi(BotUtil.TOKEN, true);
-		api.connect(new FutureCallback<DiscordAPI>() {
-			@SneakyThrows
-			public void onSuccess(DiscordAPI api) {
-				log.info("Connection successful!");
-				api.registerListener(new MessageCreateListener() {
-					MessageHandler messageHandler = new MessageHandler();
-
-					@SneakyThrows
-					public void onMessageCreate(DiscordAPI api, Message message) {
-						messageHandler.processMessage(message);
+		try {
+			// Give starting message
+			// (For future references: This bot is so small that I honestly don't care about proper logging)
+			System.out.println("Connecting SinBot...");
+			
+			// Discord API login
+			DiscordApi api = new DiscordApiBuilder().setToken(BotUtil.TOKEN).login().join();
+			api.updateStatus(UserStatus.INVISIBLE);
+			
+			MessageHandler messageHandler = new MessageHandler();
+			
+			// Setup message receiver
+			api.addMessageCreateListener(event -> {
+				String statusChangeRequest = event.getMessage().getContent().toLowerCase();
+				if (statusChangeRequest.startsWith("!!!setstatus ")) {
+					String newStatus = statusChangeRequest.split(" ")[1].trim();
+					UserStatus newUserStatus = UserStatus.fromString(newStatus);
+					if (!newUserStatus.equals(UserStatus.OFFLINE)) {
+						api.updateStatus(newUserStatus);
+						System.out.println("Changed bot status to: " + newUserStatus.toString());						
 					}
-				});
-			}
-
-			public void onFailure(Throwable t) {
-				t.printStackTrace();
-			}
-		});
+				} else {
+					messageHandler.processMessage(event);					
+				}
+			});			
+		} catch (Exception e) {
+			System.out.println("Failed to start bot! Terminating...");
+			e.printStackTrace();
+		}
 	}
 }

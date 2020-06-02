@@ -2,6 +2,7 @@ package sinbot.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -9,23 +10,16 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import lombok.Cleanup;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.ToString;
-
-@ToString
-public class CachedCounter {
+public class CachedCounter implements Comparable<CachedCounter>{
 
 	private File file;
 	private BigDecimal counter;
-	@Getter private String trigger;
-	@Getter	private String aliasPure;
-	@Getter	private String alias;
+	private String trigger;
+	private String aliasPure;
+	private String alias;
 
 	// To read when booting
-	@SneakyThrows
-	public CachedCounter(String trigger) {
+	public CachedCounter(String trigger) throws IOException {
 		this.trigger = trigger.toLowerCase().replace(".txt", "");
 		this.file = new File(BotUtil.COUNTER_FOLDER, this.trigger + ".txt");
 		List<String> read = Files.readAllLines(file.toPath());
@@ -35,7 +29,6 @@ public class CachedCounter {
 	}
 
 	// To create at runtime
-	@SneakyThrows
 	public CachedCounter(String trigger, String alias) {
 		this.trigger = trigger.toLowerCase();
 		this.file = new File(BotUtil.COUNTER_FOLDER, this.trigger + ".txt");
@@ -57,20 +50,58 @@ public class CachedCounter {
 		counter = counter.add(byCount);
 		rewriteCounterFile();
 	}
-	
-	public String getCount() {
-		return counter.stripTrailingZeros().toPlainString();
-	}
 
-	@SneakyThrows
+
 	private void rewriteCounterFile() {
-		@Cleanup OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
-		writer.write(aliasPure);
-		writer.write('\n');
-		writer.write(counter.toString());
+		OutputStreamWriter writer = null;
+		try {
+			writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+			writer.write(aliasPure);
+			writer.write('\n');
+			writer.write(counter.toString());			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}			
+		}
 	}
 
 	public void delete() {
 		file.delete();
+	}
+	
+	//////////////////
+
+	public String getTrigger() {
+		return trigger;
+	}
+
+	public String getAliasPure() {
+		return aliasPure;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public String getCount() {
+		return counter.stripTrailingZeros().toPlainString();
+	}
+	
+	public BigDecimal getCountRaw() {
+		return counter;
+	}
+	
+	public void setCountRaw(BigDecimal count) {
+		this.counter = count;
+	}
+
+	@Override
+	public int compareTo(CachedCounter o) {
+		return this.getTrigger().compareTo(o.getTrigger());
 	}
 }
