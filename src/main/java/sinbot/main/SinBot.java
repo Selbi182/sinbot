@@ -1,10 +1,14 @@
 package sinbot.main;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.user.UserStatus;
 
-import sinbot.util.BotUtil;
+import com.google.common.io.Files;
 
 public class SinBot {
 	public static void main(String[] args) {
@@ -14,7 +18,8 @@ public class SinBot {
 			System.out.println("Connecting SinBot...");
 			
 			// Discord API login
-			DiscordApi api = new DiscordApiBuilder().setToken(BotUtil.TOKEN).login().join();
+			String token = readToken();
+			DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
 			api.updateStatus(UserStatus.INVISIBLE);
 			
 			MessageHandler messageHandler = new MessageHandler();
@@ -37,5 +42,13 @@ public class SinBot {
 			System.out.println("Failed to start bot! Terminating...");
 			e.printStackTrace();
 		}
+	}
+	
+	private static String readToken() throws IOException {
+		File tokenFile = new File("./token.txt");
+		if (tokenFile.canRead()) {
+			return Files.asCharSource(tokenFile, Charset.defaultCharset()).readFirstLine();
+		}
+		throw new IOException("Can't read token file!");
 	}
 }
