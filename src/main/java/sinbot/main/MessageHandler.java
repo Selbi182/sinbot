@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -48,16 +47,33 @@ public class MessageHandler {
 				String firstWord = messageDigestor.shift();
 				switch (firstWord) {
 					case "new":
+					case "create":
 						newCounter(replyEmbed, messageDigestor);
 						break;
 					case "delete":
+					case "remove":
 						deleteCounter(replyEmbed, messageDigestor);
 						break;
 					case "rename":
+					case "description":
 						renameCounter(replyEmbed, messageDigestor);
 						break;
 					case "counters":
+					case "list":
 						listCounters(replyEmbed);
+						break;
+					case "billy":
+					case "gachi":
+					case "listbilly":
+					case "listgachi":
+						listGachiQuotes(replyEmbed);
+						break;
+					case "newgachi":
+					case "newbilly":
+					case "addbilly":
+					case "addgachi":
+					case "addquote":
+						newGachiQuote(replyEmbed, messageDigestor);
 						break;
 					default:
 						CachedCounter calledCounter = counters.get(firstWord);
@@ -70,17 +86,50 @@ public class MessageHandler {
 				message.getChannel().sendMessage(replyEmbed);
 			} else if (content.toLowerCase().matches(".*\\bbilly\\b.*")) {
 				System.out.println("New Billy message received: " + content);
-				
-				EmbedBuilder gachiEmbed = new EmbedBuilder();
-				gachiEmbed.setColor(Color.MAGENTA);
-				
-				String[] quotes = Gachi.QUOTES;
-			    int rnd = new Random().nextInt(Gachi.QUOTES.length);
-			    String randomQuote = quotes[rnd];
-			    gachiEmbed.setTitle(String.join(" ", Gachi.EMOJI, randomQuote, Gachi.EMOJI));
-			    
-				message.getChannel().sendMessage(gachiEmbed);
+				sendBillyMessage(message);
 			}
+		}
+	}
+
+	private void sendBillyMessage(MessageCreateEvent message) {
+		EmbedBuilder gachiEmbed = new EmbedBuilder();
+		gachiEmbed.setColor(Color.MAGENTA);
+		gachiEmbed.setTitle(Gachi.getRandomQuote());
+		message.getChannel().sendMessage(gachiEmbed);
+	}
+	
+
+	private void newGachiQuote(EmbedBuilder replyEmbed, Digestor digestor) {
+		String quote = digestor.peekAll();
+		if (quote != null && !quote.isBlank()) {
+			Gachi.addQuote(quote);
+			replyEmbed.setTitle("Quote Added");		
+			replyEmbed.setDescription(Gachi.billyMessage(quote));
+			replyEmbed.setColor(Color.GREEN);
+		} else {
+			replyEmbed.setTitle("Usage");		
+			replyEmbed.setDescription("`!newgachi` QUOTE");
+			replyEmbed.setColor(Color.GRAY);			
+		}
+	}
+	
+	private void listGachiQuotes(EmbedBuilder replyEmbed) {
+		List<String> gachiQuotes = Gachi.getQuotes();
+		if (!gachiQuotes.isEmpty()) {
+			Collections.sort(gachiQuotes);
+			StringBuilder sb = new StringBuilder();
+			for (String s : gachiQuotes) {
+				sb.append(String.format("\"%s\"\n", s));
+			}
+			sb.setLength(sb.length() - 1);
+			
+			replyEmbed.setTitle("Gachi Quotes (" + gachiQuotes.size() + ")");
+			replyEmbed.setDescription(sb.toString());
+			replyEmbed.setColor(Color.CYAN);			
+		} else {
+			replyEmbed.setTitle("ERROR");		
+			replyEmbed.setDescription("No Gachi quotes found!");
+			replyEmbed.setColor(Color.RED);
 		}
 	}
 

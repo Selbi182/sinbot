@@ -35,7 +35,11 @@ public class Digestor {
 
 	public String peek(int length) {
 		int realLength = length > wordList.size() ? wordList.size() : length;
-		return String.join(" ", wordList.subList(0, realLength));
+		try {
+			return String.join(" ", wordList.subList(0, realLength));
+		} catch (NullPointerException e) {
+			return "";
+		}
 	}
 	
 	public Digestor reset() {
