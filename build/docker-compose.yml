@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+  bot:
+    image: peters_discordbot
+    container_name: peters_discordbot
+    restart: always

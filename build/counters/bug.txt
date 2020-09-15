@@ -1,0 +1,2 @@
+Number of SinBot bugs Kaw discovered
+1
