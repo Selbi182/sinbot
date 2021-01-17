@@ -10,7 +10,6 @@ import java.util.Random;
 
 public class Gachi {
 
-	public static final String EMOJI = "<:gachiGasm:258280690179637250>";
 	private static final String QUOTE_FILE = "./gachi.txt";
 
 	public static List<String> getQuotes() {
@@ -46,7 +45,7 @@ public class Gachi {
 	}
 
 	public static String billyMessage(String s) {
-		return String.join(" ", EMOJI, s, EMOJI);
+		return String.join(" ", BotUtil.GACHI_EMOJI, s, BotUtil.GACHI_EMOJI);
 	}
 
 }

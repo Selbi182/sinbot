@@ -36,7 +36,7 @@ public class MessageHandler {
 		System.out.println(counterFiles.length + " existing counters loaded!");
 	}
 
-	public void processMessage(MessageCreateEvent message) {
+	public boolean processMessage(MessageCreateEvent message) {
 		if (SpamProtector.checkAuthorOkay(message.getMessageAuthor())) {
 			String content = message.getMessageContent();
 			if (content.startsWith(BotUtil.PREFIX)) {
@@ -78,7 +78,7 @@ public class MessageHandler {
 					default:
 						CachedCounter calledCounter = counters.get(firstWord);
 						if (calledCounter == null) {
-							return;
+							return false;
 						}
 						attemptProcessCounterIncrease(replyEmbed, messageDigestor, calledCounter);
 				}
@@ -88,7 +88,9 @@ public class MessageHandler {
 				System.out.println("New Billy message received: " + content);
 				sendBillyMessage(message);
 			}
+			return true;
 		}
+		return false;
 	}
 
 	private void sendBillyMessage(MessageCreateEvent message) {
