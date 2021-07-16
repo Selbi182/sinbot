@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 import sinbot.util.BotUtil;
@@ -84,11 +85,12 @@ public class MessageHandler {
 				}
 				
 				message.getChannel().sendMessage(replyEmbed);
-			} else if (content.toLowerCase().matches(".*\\bbilly\\b.*")) {
+				return true;
+			} else if (content.toLowerCase().matches(".*\\bbilly\\b.*") || message.getMessage().getMentionedUsers().stream().findFirst().map(User::isYourself).orElse(false)) {
 				System.out.println("New Billy message received: " + content);
 				sendBillyMessage(message);
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
